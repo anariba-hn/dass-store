@@ -1,0 +1,52 @@
+version: '3'
+services:
+    web:
+        image: webdevops/php-apache-dev:ubuntu-18.04
+        container_name: web_server
+        restart: always
+        user: application
+        environment:
+          - WEB_ALIAS_DOMAIN=${WEB_ALIAS_DOMAIN}
+          - WEB_DOCUMENT_ROOT=${WEB_DOCUMENT_ROOT}
+          - PHP_DATE_TIMEZONE=${PHP_DATE_TIMEZONE}
+          - PHP_DISPLAY_ERRORS=${PHP_DISPLAY_ERRORS}
+          - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT}
+          - PHP_MAX_EXECUTION_TIME=${PHP_MAX_EXECUTION_TIME}
+          - PHP_POST_MAX_SIZE=${PHP_POST_MAX_SIZE}
+          - PHP_UPLOAD_MAX_FILESIZE=${PHP_UPLOAD_MAX_FILESIZE}
+        volumes:
+          - ./project-community-edition:/app:cached
+        ports:
+          - "80:80"
+          - "443:443"
+          - "32823:22"
+        links:
+          - mysql
+    mysql:
+        image: mariadb:10
+        container_name: mysql
+        restart: always
+        ports:
+          - "3306:3306"
+        environment:
+          - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+          - MYSQL_DATABASE=${MYSQL_DATABASE}
+        volumes:
+          - db-data:/var/lib/mysql
+    phpmyadmin:
+        container_name: phpmyadmin
+        restart: always
+        image: phpmyadmin/phpmyadmin:latest
+        environment:
+          - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+          - PMA_USER=${PMA_USER}
+          - PMA_PASSWORD={PMA_PASSWORD}
+        ports:
+          - "8080:80"
+        links:
+          - mysql:db
+        depends_on:
+          - mysql
+volumes:
+    db-data:
+        external: false
